@@ -3,6 +3,7 @@ package com.projectoop.javainvaders;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -12,58 +13,89 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MainMenuScreen implements Screen {
     final JavaInvadersGame game;        // referência ao jogo global
     private Stage stage;       
     private Texture backgroundTexture;
+    private TextButton newGameButton;
+    private TextButton exitGameButton;
+    private BitmapFont font;
 
+    private static final float GAME_WIDHT = 800;
+    private static final float GAME_HEIGHT = 600;
 
     public MainMenuScreen(JavaInvadersGame game) {
         this.game = game;
     }
 
+    private void setButtons() {
+        // determina uma fonte e estilo padrão para os botões
+        font = new BitmapFont();
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.font = font;
+        buttonStyle.fontColor = Color.WHITE;
+        buttonStyle.overFontColor = Color.YELLOW;
+
+        this.newGameButton = new TextButton("New Game", buttonStyle);
+        this.newGameButton.setTransform(true);
+        this.newGameButton.setScale(1.5f);
+        this.exitGameButton = new TextButton("Quit Game", buttonStyle);
+        this.exitGameButton.setTransform(true);
+        this.exitGameButton.setScale(1.5f);
+
+
+        // adiciona a função de sair do jogo para o botão de sair
+        this.exitGameButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent e, Actor a) {
+                Gdx.app.exit();
+            }
+        });
+
+        // criar um novo jogo 
+        this.newGameButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent e, Actor a) {
+                game.setScreen(new GameScreen(game));
+
+                dispose();
+            }
+        });
+    }
+
+    // faz a configuração do layout da tela de menu
+    private void setLayout(Table table, Image image) {
+        
+        table.setFillParent(true);  // ocupa a tela inteira
+        image.setFillParent(true);
+        
+        table.bottom();
+        table.add(newGameButton).pad(15);
+        table.row();
+        table.add(exitGameButton).pad(15);
+        table.padBottom(50);
+    }
+
     @Override
     public void show() {
         // ScreenViewport se adapta à tela
-        stage = new Stage(new ScreenViewport());
+        stage = new Stage(new FitViewport(GAME_WIDHT, GAME_HEIGHT));
         
         // permite o reconhecimente de mouse e teclado
         Gdx.input.setInputProcessor(stage);
 
-        // determina uma fonte e estilo padrão para os botões
-        BitmapFont font = new BitmapFont();
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.font = font;
-
-        TextButton newGameButton = new TextButton("New Game", buttonStyle);
-        TextButton loadGameButton = new TextButton("Load Game", buttonStyle);
-        TextButton exitGameButton = new TextButton("Quit Game", buttonStyle);
+        // inicializa e estiliza os botões
+        setButtons();
 
         backgroundTexture = new Texture(Gdx.files.internal("MainMenuBackground.png"));
         Image backgroundImage = new Image(backgroundTexture);
 
         // organiza o layout
         Table table = new Table();
-        table.setFillParent(true);  // ocupa a tela inteira
-        backgroundImage.setFillParent(true);
-        
-        table.bottom();
-        table.add(newGameButton).pad(10);
-        table.row();
-        table.add(loadGameButton).pad(10);
-        table.row();
-        table.add(exitGameButton).pad(10);
-        table.padBottom(50);
-
-        // adiciona a função de sair do jogo para o botão de sair
-        exitGameButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent e, Actor a) {
-                Gdx.app.exit();
-            }
-        });
+        setLayout(table, backgroundImage);
 
         stage.addActor(backgroundImage);
         stage.addActor(table);
@@ -71,7 +103,6 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Draw your screen here. "delta" is the time since last render in seconds.
         Gdx.gl.glClearColor(0, 0, 0.1f, 1);       // limpa a tela para um azul bem escuro(0.1f no azul)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);       // aplica a limpeza
 
@@ -81,11 +112,9 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        // If the window is minimized on a desktop (LWJGL3) platform, width and height are 0, which causes problems.
-        // In that case, we don't resize anything, and wait for the window to be a normal size before updating.
+        // Verifica se a tela está minimizada e, se sim, não renderiza nada
         if(width <= 0 || height <= 0) return;
 
-        // Resize your screen here. The parameters represent the new window size.
         stage.getViewport().update(width, height, true);        // atualiza o viewport caso o usuario redimensione a tela
     }
 
@@ -106,9 +135,10 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
-        // Destroy screen's assets here.
-        stage.dispose();  // libera a memória(NÂO RETIRAR)
+        // libera a memória(NÂO RETIRAR)
+        stage.dispose();  
         backgroundTexture.dispose();
+        font.dispose();
     }
 
 }
