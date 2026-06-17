@@ -24,7 +24,7 @@ public class MainMenuScreen implements Screen {
     private TextButton exitGameButton;
     private BitmapFont font;
 
-    private static final float GAME_WIDHT = 800;
+    private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
     public MainMenuScreen(JavaInvadersGame game) {
@@ -82,7 +82,7 @@ public class MainMenuScreen implements Screen {
     @Override
     public void show() {
         // ScreenViewport se adapta à tela
-        stage = new Stage(new FitViewport(GAME_WIDHT, GAME_HEIGHT));
+        stage = new Stage(new FitViewport(GAME_WIDTH, GAME_HEIGHT));
         
         // permite o reconhecimente de mouse e teclado
         Gdx.input.setInputProcessor(stage);
