@@ -22,7 +22,6 @@ public class Player {
     private static final float SHOOT_COOLDOWN = 0.72f;
 
     private static final float GAME_WIDTH = 800;
-    private static final float GAME_HEIGHT = 600;
 
     public Player() {
         initFlyingAnimation();

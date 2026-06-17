@@ -16,10 +16,13 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 
 public class GameScreen implements Screen {
+
     final JavaInvadersGame game;
     final Player player;
-    private com.badlogic.gdx.utils.Array<Laser> activateLasers;     // lista de tiros que estão na tela
-    private Texture laserTexture;
+    private AlienFleet aliensFleet;
+    private LaserManager laserManager;
+    private BombManager bombManager;
+
     private OrthographicCamera camera;
     private Viewport view;
     private Stage stage;       
@@ -33,8 +36,9 @@ public class GameScreen implements Screen {
     public GameScreen(JavaInvadersGame game) {
         this.game = game;
         this.player = new Player();
-        activateLasers = new com.badlogic.gdx.utils.Array<Laser>();
-        laserTexture = new Texture(Gdx.files.internal("Laser.png"));
+        this.aliensFleet = new AlienFleet();
+        this.bombManager = new BombManager();
+        this.laserManager = new LaserManager();
 
         camera = new OrthographicCamera();
         view = new FitViewport(GAME_WIDTH, GAME_HEIGHT, camera);
@@ -72,25 +76,13 @@ public class GameScreen implements Screen {
 
         game.sprite.setProjectionMatrix(camera.combined);
 
-        player.update(delta);
-        Laser newLaser = player.shoot();
-        if(newLaser != null)
-            activateLasers.add(newLaser);
-
+        // Atualiza os estados das entidades do jogo
+        updateStates(delta);
         // renderização
         game.sprite.begin();
-        player.draw(game.sprite);
-        // atualiza, desenha e gerencia a memória dos lasers
-        for(int i = activateLasers.size - 1; i>=0; i--) {
-            Laser laser = activateLasers.get(i);
-            laser.update(delta);
-            laser.draw(game.sprite, laserTexture);
 
-            // TODO: quando implementar os aliens, deve colocar a condição de se bateu em um alien
-            if(laser.getHitbox().y > GAME_HEIGHT) {
-                activateLasers.removeIndex(i);
-            }
-        }
+        drawEntities();
+
         game.sprite.end();
     }
 
@@ -102,6 +94,7 @@ public class GameScreen implements Screen {
 
         // Resize your screen here. The parameters represent the new window size.
         view.update(width, height, true);
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
@@ -125,6 +118,27 @@ public class GameScreen implements Screen {
         stage.dispose();
         backgroundTexture.dispose();
         player.dispose();
-        laserTexture.dispose();
+        laserManager.dispose();
+        aliensFleet.dispose();
+        bombManager.dispose();
+    }
+
+    private void updateStates(float delta) {
+        // atualização do jogo
+        player.update(delta);
+        Laser newLaser = player.shoot();
+        if(newLaser != null)
+            laserManager.addLaser(newLaser);
+
+        laserManager.update(delta);
+        aliensFleet.update(delta, bombManager.getBombs());
+        bombManager.update(delta);
+    }
+
+    private void drawEntities() {
+        player.draw(game.sprite);
+        aliensFleet.draw(game.sprite);
+        laserManager.draw(game.sprite);
+        bombManager.draw(game.sprite);
     }
 }
