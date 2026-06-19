@@ -22,19 +22,19 @@ public class AlienFleet {
     private static final float ALIEN_STEP_Y = 25f;  // Pixels descidos ao bater na borda
 
     private float alienShootTimer;
-    private static final float ALIEN_SHOOT_INTERVAL = 0.8f;
+    private float ALIEN_SHOOT_INTERVAL = 0.8f;      // velocidade inicial do tiro dos alienígenas
 
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
-    public AlienFleet() {
-        initFleet();
+    public AlienFleet(int currentLevel) {
+        initFleet(currentLevel);
     }
 
     /**
      * Método que desenha a frota de aliens na parte superior da tela e inicia a frota por completo
      */
-    private void initFleet() {
+    private void initFleet(int currentLevel) {
         aliensAlive = new Array<Alien>();
 
         alienSpriteSheet = new Texture(Gdx.files.internal("Alien_Spritesheet.png"));
@@ -57,8 +57,25 @@ public class AlienFleet {
         alienShootTimer = 0f;
 
         // posicionamento da matriz dos aliens
-        int rows = 5;
-        int cols = 9;
+        int rows = 0;
+        int cols = 0;
+        if(currentLevel == 1){
+            // não há alteração na velocidade dos tiros nem no movimento
+            rows = 5;
+            cols = 9;
+        }
+        else if(currentLevel == 2) {
+            rows = 5;
+            cols = 10;
+            ALIEN_SHOOT_INTERVAL = 0.6f;
+            alienMoveInterval = 0.35f;
+        }
+        else {
+            rows = 5;
+            cols = 11;
+            ALIEN_SHOOT_INTERVAL = 0.4f;
+            alienMoveInterval = 0.25f;
+        }
         float startX = 100f;    // margem inicial esquerda
         float startY = GAME_HEIGHT - 100f; // posição da linha mais alta
         float spacingX = 50f;   // distância horizontal entre os aliens
