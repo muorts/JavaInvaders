@@ -17,9 +17,13 @@ public class Player {
     private float stateTime;        // acumulador para o tempo de animação
     private Rectangle hitbox;
 
+    private int points = 0;         // pontos iniciais
+    private int lives = 3;          // jogador inicia com 3 vidas
+
     private static final float SHIP_SPEED = 300f;   // 300 pixels por segundo
     private float shootTimer;   // cronômetro para atirar
     private static final float SHOOT_COOLDOWN = 0.72f;
+    private boolean laserSpawnedThisShot = true;
 
     private static final float GAME_WIDTH = 800;
 
@@ -134,13 +138,20 @@ public class Player {
      */
     public Laser shoot() {
         if(Gdx.input.isKeyPressed(Input.Keys.SPACE) && shootTimer <= 0) {
+            // inicia o processo de "carregar a arma"
             shootTimer = SHOOT_COOLDOWN;    // reinicia o cronômetro
+            stateTime = 0f;
+            laserSpawnedThisShot = false;
+        }
 
-            float laserX = hitbox.x + (hitbox.width/2f) - 4.5f;
-            float laserY = hitbox.height;
-
+        if(shootTimer > 0 && !laserSpawnedThisShot && stateTime >= 0.60f) { // 60f está no 6° frame da animação de tiro
+            // sincroniza a animação de tiro com o laser propriamente dito
+            laserSpawnedThisShot = true;
+            float laserX = hitbox.x + (hitbox.width / 2f) - 4.5f;
+            float laserY = hitbox.y + hitbox.height;
             return new Laser(laserX, laserY);
         }
+
         return null;
     }
 
@@ -175,5 +186,14 @@ public class Player {
      */
     public Rectangle getHitbox() {
         return hitbox;
+    }
+
+    /**
+     * Retorna o status atual do player
+     * @return um par(pontos, vidas) nessa ordem
+     */
+    public int[] getStatus() {
+        int[] status = {points, lives};
+        return status;
     }
 }
