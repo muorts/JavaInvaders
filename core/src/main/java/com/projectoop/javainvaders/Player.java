@@ -144,7 +144,7 @@ public class Player {
             laserSpawnedThisShot = false;
         }
 
-        if(shootTimer > 0 && !laserSpawnedThisShot && stateTime >= 0.60f) { // 60f está no 6° frame da animação de tiro
+        if(shootTimer > 0 && !laserSpawnedThisShot && stateTime >= 0.70f) { // 60f está no 6° frame da animação de tiro
             // sincroniza a animação de tiro com o laser propriamente dito
             laserSpawnedThisShot = true;
             float laserX = hitbox.x + (hitbox.width / 2f) - 4.5f;
