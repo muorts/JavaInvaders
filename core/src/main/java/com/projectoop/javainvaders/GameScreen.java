@@ -5,6 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -19,30 +20,36 @@ public class GameScreen implements Screen {
 
     final JavaInvadersGame game;
     final Player player;
-    private AlienFleet aliensFleet;
-    private LaserManager laserManager;
-    private BombManager bombManager;
+    private AlienFleet aliensFleet;         // gerenciador da horda de aliens
+    private LaserManager laserManager;      // gerenciador dos lasers em tela
+    private BombManager bombManager;        // gerenciador das bombas em tela
+    private int currentLevel;
 
     private OrthographicCamera camera;
     private Viewport view;
     private Stage stage;       
     private Texture backgroundTexture;
+    private BitmapFont hudFont;
 
     // variaveis que definem o tamanho da tela do jogo
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
 
-    public GameScreen(JavaInvadersGame game) {
+    public GameScreen(JavaInvadersGame game, int Level) {
         this.game = game;
         this.player = new Player();
-        this.aliensFleet = new AlienFleet();
+        this.aliensFleet = new AlienFleet(Level);
         this.bombManager = new BombManager();
         this.laserManager = new LaserManager();
+        currentLevel = Level;
 
         camera = new OrthographicCamera();
         view = new FitViewport(GAME_WIDTH, GAME_HEIGHT, camera);
         camera.position.set(GAME_WIDTH/2f, GAME_HEIGHT/2f, 0);
+        hudFont = new BitmapFont(Gdx.files.internal("GameFont.fnt"));
+        hudFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        hudFont.getData().setScale(0.5f);
     }
 
     @Override
@@ -82,6 +89,7 @@ public class GameScreen implements Screen {
         game.sprite.begin();
 
         drawEntities();
+        drawHUD();
 
         game.sprite.end();
     }
@@ -121,6 +129,7 @@ public class GameScreen implements Screen {
         laserManager.dispose();
         aliensFleet.dispose();
         bombManager.dispose();
+        hudFont.dispose();
     }
 
     private void updateStates(float delta) {
@@ -132,6 +141,15 @@ public class GameScreen implements Screen {
 
         laserManager.update(delta);
         aliensFleet.update(delta, bombManager.getBombs());
+        if(aliensFleet.getAliens().size == 0) {
+            // acabou o nível
+            if(currentLevel == 3) {
+                // checa se o jogo acabou
+                winGame();
+                return;
+            }
+            passLevel();
+        }
         bombManager.update(delta);
         checkCollisions();
     }
@@ -142,6 +160,7 @@ public class GameScreen implements Screen {
         laserManager.draw(game.sprite);
         bombManager.draw(game.sprite);
     }
+
 
     // funcao criada para checar as colisoes e der um retorno sobre elas
     private void checkCollisions() {
@@ -199,6 +218,23 @@ public class GameScreen implements Screen {
             }
 
         }
+    }
+
+    private void passLevel() {
+        game.setScreen(new LevelCompleteScreen(game, currentLevel));
+    }
+
+    private void winGame() {
+        // TODO: Desenhar tela de game win
+        return;
+    }
+
+    private void drawHUD() {
+        int[] status = player.getStatus();
+        int currentPoints = status[0];
+        int currentLives = status[1];
+        hudFont.draw(game.sprite, "SCORE: " + currentPoints, 20, GAME_HEIGHT - 20);
+        hudFont.draw(game.sprite, "LIVES: " + currentLives, GAME_WIDTH - 150, GAME_HEIGHT - 20);
 
     }
 }
