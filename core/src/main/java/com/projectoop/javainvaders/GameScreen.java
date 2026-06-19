@@ -133,6 +133,7 @@ public class GameScreen implements Screen {
         laserManager.update(delta);
         aliensFleet.update(delta, bombManager.getBombs());
         bombManager.update(delta);
+        checkCollisions();
     }
 
     private void drawEntities() {
@@ -140,5 +141,64 @@ public class GameScreen implements Screen {
         aliensFleet.draw(game.sprite);
         laserManager.draw(game.sprite);
         bombManager.draw(game.sprite);
+    }
+
+    // funcao criada para checar as colisoes e der um retorno sobre elas
+    private void checkCollisions() {
+        // lista as entidades da tela
+        com.badlogic.gdx.utils.Array<Laser> lasers = laserManager.getLasers();
+        com.badlogic.gdx.utils.Array<Alien> aliens = aliensFleet.getAliens();
+        com.badlogic.gdx.utils.Array<Bomb> bombs = bombManager.getBombs();
+
+        // Colisão 1: Player atingindo os Aliens
+        for (int i = lasers.size - 1; i >= 0; i--) {
+            Laser laser = lasers.get(i);
+            boolean laserHit = false;
+
+            for (int j = aliens.size -1; j >= 0; j--) {
+                Alien alien = aliens.get(j);
+
+                // Método AABB para colisões
+                if (laser.getHitbox().overlaps(alien.getHitbox())) {
+                    // Remove o alien e marca que o laser bateu
+
+                    // OPCIONAL: ADICIONAR UM SOM 
+
+                    aliens.removeIndex(j);
+                    laserHit = true;
+                    break; // laser bateu, logo nao precisa checar outros aliens
+                }
+            }
+
+            if (laserHit) {
+                lasers.removeIndex(i);
+            }
+        }
+
+        // Colisao 2: Bomba atinge player
+        for (int i = bombs.size -1; i >= 0; i--) {
+            Bomb bomb = bombs.get(i);
+
+            if(bomb.getHitbox().overlaps(player.getHitbox())) {
+                bombs.removeIndex(i);
+                
+                // DECIDIR O QUE VAI FAZER QUANDO PLAYER TOMAR DANO
+
+                System.out.println("Jogador foi Atingido");
+            }
+        }
+
+        // Colisao 3: Alien atinge player
+        for (int i = aliens.size - 1; i >= 0; i--) {
+            Alien alien = aliens.get(i);
+
+            if(alien.getHitbox().overlaps(player.getHitbox())) {
+                // ADICIONAR ALGO PARA QUANDO O PLAYER EH ATINGIDO POR UMA NAVE
+
+                System.out.println("ALIEN INVADIU A NAVE!");
+            }
+
+        }
+
     }
 }
