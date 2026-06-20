@@ -18,8 +18,9 @@ public class LevelCompleteScreen implements Screen {
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
-    public LevelCompleteScreen(JavaInvadersGame game, int previousLevel) {
+    public LevelCompleteScreen(JavaInvadersGame game, int level) {
         this.game = game;
+        previousLevel = level;
     }
 
     @Override
@@ -28,7 +29,7 @@ public class LevelCompleteScreen implements Screen {
         stage = new Stage(new FitViewport(GAME_WIDTH, GAME_HEIGHT));
 
         // Carrega a imagem de level completed
-        backgroundTexture = new Texture(Gdx.files.internal("level_complete.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("Level_complete.png"));
         
         Image backgroundImage = new Image(backgroundTexture);
         backgroundImage.setFillParent(true); // Faz a imagem ocupar a tela inteira
@@ -46,9 +47,11 @@ public class LevelCompleteScreen implements Screen {
         stage.act(delta);
         stage.draw();
 
-        // Se o jogador clicar na tela, apertar Enter ou Espaço, avança.
-        if (Gdx.input.justTouched() || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            game.setScreen(new GameScreen(game, previousLevel + 1));
+        // Se o jogador apertar Espaço, avança.
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            int newLevel = previousLevel + 1;
+            System.out.println("Mudando para o nível: " + newLevel);
+            game.setScreen(new GameScreen(game, newLevel));
             dispose(); // Destrói a tela de Level Completed para liberar memória
         }
     }

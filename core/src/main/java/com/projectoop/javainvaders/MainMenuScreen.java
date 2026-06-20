@@ -33,18 +33,16 @@ public class MainMenuScreen implements Screen {
 
     private void setButtons() {
         // determina uma fonte e estilo padrão para os botões
-        font = new BitmapFont();
+        font = new BitmapFont(Gdx.files.internal("GameFont.fnt"));
+        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        font.getData().setScale(0.35f);
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.font = font;
         buttonStyle.fontColor = Color.WHITE;
         buttonStyle.overFontColor = Color.YELLOW;
 
         this.newGameButton = new TextButton("New Game", buttonStyle);
-        this.newGameButton.setTransform(true);
-        this.newGameButton.setScale(1.5f);
         this.exitGameButton = new TextButton("Quit Game", buttonStyle);
-        this.exitGameButton.setTransform(true);
-        this.exitGameButton.setScale(1.5f);
 
 
         // adiciona a função de sair do jogo para o botão de sair
@@ -72,10 +70,10 @@ public class MainMenuScreen implements Screen {
         image.setFillParent(true);
         
         table.bottom();
-        table.add(newGameButton).pad(15);
+        table.padLeft(20).padBottom(60);
+        table.add(newGameButton).padBottom(15).center();
         table.row();
-        table.add(exitGameButton).pad(15);
-        table.padBottom(50);
+        table.add(exitGameButton).center();
     }
 
     @Override

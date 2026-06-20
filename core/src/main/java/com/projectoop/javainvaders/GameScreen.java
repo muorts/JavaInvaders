@@ -23,7 +23,7 @@ public class GameScreen implements Screen {
     private AlienFleet aliensFleet;         // gerenciador da horda de aliens
     private LaserManager laserManager;      // gerenciador dos lasers em tela
     private BombManager bombManager;        // gerenciador das bombas em tela
-    private int currentLevel;
+    private int currentLevel = 1;       // o jogo inicia no primeiro nível
 
     private OrthographicCamera camera;
     private Viewport view;
@@ -37,12 +37,12 @@ public class GameScreen implements Screen {
 
 
     public GameScreen(JavaInvadersGame game, int Level) {
+        currentLevel = Level;
         this.game = game;
         this.player = new Player();
         this.aliensFleet = new AlienFleet(Level);
         this.bombManager = new BombManager();
         this.laserManager = new LaserManager();
-        currentLevel = Level;
 
         camera = new OrthographicCamera();
         view = new FitViewport(GAME_WIDTH, GAME_HEIGHT, camera);
