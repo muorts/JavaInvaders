@@ -15,7 +15,8 @@ public class Player {
     private Animation<TextureRegion> shootingAnimation;
 
     private float stateTime;        // acumulador para o tempo de animação
-    private Rectangle hitbox;
+    private Rectangle visualBox;        // caixa que mantem a arte do jogador
+    private Rectangle collisionBox;     // hitbox real do jogador
 
     private int points = 0;         // pontos iniciais
     private int lives = 3;          // jogador inicia com 3 vidas
@@ -91,10 +92,15 @@ public class Player {
      * OBS: para aumentar o tamanho da nave, aumente width e height aqui
      */
     private void initPlayerHitbox() {
-        // Hitbox do player
-        hitbox = new Rectangle();
-        hitbox.width = 36;
-        hitbox.height = 128;
+        // Hitbox visual do player
+        visualBox = new Rectangle();
+        visualBox.width = 36;
+        visualBox.height = 128;
+
+        // Hitbox real do player
+        collisionBox = new Rectangle();
+        collisionBox.width = 18;        // largura real da imagem   
+        collisionBox.height = 64;       // altura real da imagem
     }
 
     /**
@@ -103,8 +109,10 @@ public class Player {
      */
     private void initPlayerPosition() {
         // posiciona o player no centro inferior da tela
-        hitbox.x = (GAME_WIDTH / 2f) - (hitbox.width / 2f);
-        hitbox.y = 20;    // 20 pixels acima da borda inferior
+        visualBox.x = (GAME_WIDTH / 2f) - (visualBox.width / 2f);
+        visualBox.y = 20;    // 20 pixels acima da borda inferior
+        collisionBox.x = visualBox.x;
+        collisionBox.y = visualBox.y;
     }
 
     /**
@@ -118,17 +126,20 @@ public class Player {
         
         // Multiplicar por 'delta' garante que a nave ande a 300pix/s independente do FPS
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
-            hitbox.x -= SHIP_SPEED * delta;
+            visualBox.x -= SHIP_SPEED * delta;
         }
         else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
-            hitbox.x += SHIP_SPEED * delta;
+            visualBox.x += SHIP_SPEED * delta;
         }
         // Garante os limites da tela
-        if (hitbox.x < 0)
-            hitbox.x = 0;
-        else if (hitbox.x > GAME_WIDTH - hitbox.width)
-            hitbox.x = GAME_WIDTH - hitbox.width;
+        if (visualBox.x < 0)
+            visualBox.x = 0;
+        else if (visualBox.x > GAME_WIDTH - visualBox.width)
+            visualBox.x = GAME_WIDTH - visualBox.width;
 
+        // mantém a hitbox real sincronizada com a visual
+        collisionBox.x = visualBox.x;
+        collisionBox.y = visualBox.y;
         stateTime += delta;
     }
 
@@ -147,8 +158,8 @@ public class Player {
         if(shootTimer > 0 && !laserSpawnedThisShot && stateTime >= 0.70f) { // 60f está no 6° frame da animação de tiro
             // sincroniza a animação de tiro com o laser propriamente dito
             laserSpawnedThisShot = true;
-            float laserX = hitbox.x + (hitbox.width / 2f) - 4.5f;
-            float laserY = hitbox.y + hitbox.height;
+            float laserX = visualBox.x + (visualBox.width / 2f) - 4.5f;
+            float laserY = visualBox.y + visualBox.height;
             return new Laser(laserX, laserY);
         }
 
@@ -169,7 +180,7 @@ public class Player {
             currentFrame = flyingAnimation.getKeyFrame(stateTime, true);
         }
 
-        batch.draw(currentFrame, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+        batch.draw(currentFrame, visualBox.x, visualBox.y, visualBox.width, visualBox.height);
     }
 
     /**
@@ -185,7 +196,7 @@ public class Player {
      * @return - hitbox do jogador, ou seja, as coordenadas (x, y) dele
      */
     public Rectangle getHitbox() {
-        return hitbox;
+        return collisionBox;
     }
 
     /**
