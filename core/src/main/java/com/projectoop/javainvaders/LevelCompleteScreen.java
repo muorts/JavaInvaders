@@ -12,15 +12,17 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 public class LevelCompleteScreen implements Screen {
     final JavaInvadersGame game;
     private int previousLevel;
+    private int previousPoints;
     private Stage stage;
     private Texture backgroundTexture;
 
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
-    public LevelCompleteScreen(JavaInvadersGame game, int level) {
+    public LevelCompleteScreen(JavaInvadersGame game, int level, int points) {
         this.game = game;
         previousLevel = level;
+        previousPoints = points;
     }
 
     @Override
@@ -50,8 +52,7 @@ public class LevelCompleteScreen implements Screen {
         // Se o jogador apertar Espaço, avança.
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             int newLevel = previousLevel + 1;
-            System.out.println("Mudando para o nível: " + newLevel);
-            game.setScreen(new GameScreen(game, newLevel));
+            game.setScreen(new GameScreen(game, newLevel, previousPoints));
             dispose(); // Destrói a tela de Level Completed para liberar memória
         }
     }

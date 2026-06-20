@@ -57,7 +57,7 @@ public class MainMenuScreen implements Screen {
         this.newGameButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent e, Actor a) {
-                game.setScreen(new GameScreen(game, 1));
+                game.setScreen(new GameScreen(game, 1, 0));     // começa no nível 1 com 0 pontos
                 dispose();
             }
         });
