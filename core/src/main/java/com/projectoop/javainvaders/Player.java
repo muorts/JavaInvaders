@@ -143,6 +143,18 @@ public class Player {
         stateTime += delta;
     }
 
+    public void addPoints(int x) {
+        points += x;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+    public void takeDamage() {
+        lives--;
+    }
+    
+
     /**
      *  Método que atira um laser do centro da nave se for apertado espaço e o cronometro estiver no 0
      * @return - um novo Laser com as coordenadas do meio do topo da nave ou nulo se não obedecer uma das condições

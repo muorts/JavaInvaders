@@ -19,11 +19,12 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 public class GameScreen implements Screen {
 
     final JavaInvadersGame game;
-    final Player player;
+    final Player player;      
     private AlienFleet aliensFleet;         // gerenciador da horda de aliens
     private LaserManager laserManager;      // gerenciador dos lasers em tela
     private BombManager bombManager;        // gerenciador das bombas em tela
     private int currentLevel = 1;       // o jogo inicia no primeiro nível
+    private ExplosionManager explosionManager;
 
     private OrthographicCamera camera;
     private Viewport view;
@@ -36,13 +37,16 @@ public class GameScreen implements Screen {
     private static final float GAME_HEIGHT = 600;
 
 
-    public GameScreen(JavaInvadersGame game, int Level) {
+    public GameScreen(JavaInvadersGame game, int Level, int previousPoints) {
         currentLevel = Level;
         this.game = game;
         this.player = new Player();
+        player.addPoints(previousPoints);       // garante que o jogador irá começar com 0 pontos ou com os pontos das outras fases
+
         this.aliensFleet = new AlienFleet(Level);
         this.bombManager = new BombManager();
         this.laserManager = new LaserManager();
+        this.explosionManager = new ExplosionManager();
 
         camera = new OrthographicCamera();
         view = new FitViewport(GAME_WIDTH, GAME_HEIGHT, camera);
@@ -130,10 +134,13 @@ public class GameScreen implements Screen {
         aliensFleet.dispose();
         bombManager.dispose();
         hudFont.dispose();
+        explosionManager.dispose();
     }
 
     private void updateStates(float delta) {
         // atualização do jogo
+
+        // atualiza as posições e o tiro
         player.update(delta);
         Laser newLaser = player.shoot();
         if(newLaser != null)
@@ -141,16 +148,15 @@ public class GameScreen implements Screen {
 
         laserManager.update(delta);
         aliensFleet.update(delta, bombManager.getBombs());
-        if(aliensFleet.getAliens().size == 0) {
-            // acabou o nível
-            if(currentLevel == 3) {
-                // checa se o jogo acabou
-                winGame();
-                return;
-            }
-            passLevel();
-        }
+        checkWinOrLoose();
+
+        // atualiza as bombas
         bombManager.update(delta);
+
+        // atualiza as explosoes
+        explosionManager.update(delta);
+        
+        // checa as colisões
         checkCollisions();
     }
 
@@ -159,6 +165,7 @@ public class GameScreen implements Screen {
         aliensFleet.draw(game.sprite);
         laserManager.draw(game.sprite);
         bombManager.draw(game.sprite);
+        explosionManager.draw(game.sprite);
     }
 
 
@@ -181,10 +188,14 @@ public class GameScreen implements Screen {
                 if (laser.getHitbox().overlaps(alien.getHitbox())) {
                     // Remove o alien e marca que o laser bateu
 
-                    // OPCIONAL: ADICIONAR UM SOM 
+                    // Pega o centro do alien e recua metade do tamanho da explosão (24px)
+                    float expX = alien.getHitbox().x + (alien.getHitbox().width / 2f) - (48f / 2f);
+                    float expY = alien.getHitbox().y + (alien.getHitbox().height / 2f) - (48f / 2f);
+                    explosionManager.addExplosion(expX, expY);
 
                     aliens.removeIndex(j);
                     laserHit = true;
+                    player.addPoints(50);           // ganha 50 pontos por alien destruido
                     break; // laser bateu, logo nao precisa checar outros aliens
                 }
             }
@@ -201,9 +212,12 @@ public class GameScreen implements Screen {
             if(bomb.getHitbox().overlaps(player.getHitbox())) {
                 bombs.removeIndex(i);
                 
-                // DECIDIR O QUE VAI FAZER QUANDO PLAYER TOMAR DANO
+                float expX = player.getHitbox().x + (player.getHitbox().width / 2f) - (48f / 2f);
+                float expY = player.getHitbox().y + (player.getHitbox().height / 2f) - (48f / 2f);
+                explosionManager.addExplosion(expX, expY);
 
                 System.out.println("Jogador foi Atingido");
+                player.takeDamage();            // perde uma vida
             }
         }
 
@@ -212,29 +226,50 @@ public class GameScreen implements Screen {
             Alien alien = aliens.get(i);
 
             if(alien.getHitbox().overlaps(player.getHitbox())) {
-                // ADICIONAR ALGO PARA QUANDO O PLAYER EH ATINGIDO POR UMA NAVE
-
                 System.out.println("ALIEN INVADIU A NAVE!");
+                gameLoose();
             }
 
         }
     }
 
     private void passLevel() {
-        game.setScreen(new LevelCompleteScreen(game, currentLevel));
+        game.setScreen(new LevelCompleteScreen(game, currentLevel, player.getPoints()));
     }
 
     private void winGame() {
-        // TODO: Desenhar tela de game win
-        return;
+        System.out.println("GANHOU O JOGO");
+        System.out.println("Pontuação total: " + player.getPoints());
+        Gdx.app.exit();
+    }
+
+    private void gameLoose() {
+        System.out.println("PERDEU O JOGO");
+        System.out.println("Pontuação total: " + player.getPoints());
+        Gdx.app.exit();
     }
 
     private void drawHUD() {
         int[] status = player.getStatus();
-        int currentPoints = status[0];
-        int currentLives = status[1];
-        hudFont.draw(game.sprite, "SCORE: " + currentPoints, 20, GAME_HEIGHT - 20);
-        hudFont.draw(game.sprite, "LIVES: " + currentLives, GAME_WIDTH - 150, GAME_HEIGHT - 20);
+        int playerPoints = status[0];
+        int playerLives = status[1];
+        hudFont.draw(game.sprite, "SCORE: " + playerPoints, 20, GAME_HEIGHT - 20);
+        hudFont.draw(game.sprite, "LIVES: " + playerLives, GAME_WIDTH - 150, GAME_HEIGHT - 20);
 
+    }
+
+    private void checkWinOrLoose() {
+        // checa se matou todos os aliens
+        if(aliensFleet.getAliens().size == 0) {
+            // acabou o nível
+            if(currentLevel == 3) {
+                // checa se o jogo acabou
+                winGame();
+                return;
+            }
+            passLevel();
+        }
+
+        // TODO: checar se acabou as vidas do player
     }
 }
