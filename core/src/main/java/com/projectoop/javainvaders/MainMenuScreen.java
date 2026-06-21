@@ -67,6 +67,9 @@ public class MainMenuScreen implements Screen {
             public void changed(ChangeEvent e, Actor a) {
 
                 confirmSound.play(1f);
+
+                game.backgroundMusic.play();
+                
                 game.setScreen(new GameScreen(game, 1, 0));     // começa no nível 1 com 0 pontos
                 dispose();
             }

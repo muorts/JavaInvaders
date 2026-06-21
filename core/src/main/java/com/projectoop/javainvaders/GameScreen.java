@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
 
@@ -36,7 +35,6 @@ public class GameScreen implements Screen {
     private BitmapFont hudFont;
 
     private Sound exploseSound;
-    private Music backgroundMusic;
     private Sound damageSound;
     private Sound bigExploseSound;
 
@@ -55,6 +53,7 @@ public class GameScreen implements Screen {
         this.bombManager = new BombManager();
         this.laserManager = new LaserManager();
         this.explosionManager = new ExplosionManager();
+        initGameSound();
 
         camera = new OrthographicCamera();
         view = new FitViewport(GAME_WIDTH, GAME_HEIGHT, camera);
@@ -81,17 +80,7 @@ public class GameScreen implements Screen {
 
         stage.addActor(backgroundImage);
         stage.addActor(table);
-
-        exploseSound = Gdx.audio.newSound(Gdx.files.internal("kill.mp3"));
-        damageSound = Gdx.audio.newSound(Gdx.files.internal("damage.mp3"));
-        bigExploseSound = Gdx.audio.newSound(Gdx.files.internal("big_explose.mp3"));
-
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("level_1.mp3"));
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.5f);
-        backgroundMusic.play();
-
-        }
+    }
 
     @Override
     public void render(float delta) {
@@ -160,6 +149,8 @@ public class GameScreen implements Screen {
         hudFont.dispose();
         explosionManager.dispose();
         exploseSound.dispose();
+        damageSound.dispose();
+        bigExploseSound.dispose();
     }
 
     private void updateStates(float delta) {
@@ -272,9 +263,7 @@ public class GameScreen implements Screen {
     private void winGame() {
         System.out.println("GANHOU O JOGO");
         System.out.println("Pontuação total: " + player.getPoints());
-
-        backgroundMusic.stop();
-
+        game.backgroundMusic.dispose();
         game.setScreen(new GameWinScreen(game, player.getPoints()));
         dispose();
     }
@@ -282,10 +271,7 @@ public class GameScreen implements Screen {
     private void gameLoose() {
         System.out.println("PERDEU O JOGO");
         System.out.println("Pontuação total: " + player.getPoints());
-        
-        backgroundMusic.stop();
-
-        // para testes game.setScreen(new GameWinScreen(game, player.getPoints()));
+        game.backgroundMusic.dispose();
         game.setScreen(new GameOverScreen(game, player.getPoints()));
         dispose();
     }
@@ -317,4 +303,10 @@ public class GameScreen implements Screen {
         }
     }
 
+
+    private void initGameSound() {
+        exploseSound = Gdx.audio.newSound(Gdx.files.internal("kill.mp3"));
+        damageSound = Gdx.audio.newSound(Gdx.files.internal("damage.mp3"));
+        bigExploseSound = Gdx.audio.newSound(Gdx.files.internal("big_explose.mp3"));
+    }
 }
