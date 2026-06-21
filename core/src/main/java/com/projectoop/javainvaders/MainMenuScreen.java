@@ -14,7 +14,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+
 
 public class MainMenuScreen implements Screen {
     final JavaInvadersGame game;        // referência ao jogo global
@@ -24,7 +26,10 @@ public class MainMenuScreen implements Screen {
     private TextButton exitGameButton;
     private BitmapFont font;
 
-    private static final float GAME_WIDHT = 800;
+    private Music backgroundMusic;
+    private Sound confirmSound;
+
+    private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
     public MainMenuScreen(JavaInvadersGame game) {
@@ -33,24 +38,25 @@ public class MainMenuScreen implements Screen {
 
     private void setButtons() {
         // determina uma fonte e estilo padrão para os botões
-        font = new BitmapFont();
+        font = new BitmapFont(Gdx.files.internal("GameFont.fnt"));
+        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        font.getData().setScale(0.35f);
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.font = font;
         buttonStyle.fontColor = Color.WHITE;
         buttonStyle.overFontColor = Color.YELLOW;
 
         this.newGameButton = new TextButton("New Game", buttonStyle);
-        this.newGameButton.setTransform(true);
-        this.newGameButton.setScale(1.5f);
         this.exitGameButton = new TextButton("Quit Game", buttonStyle);
-        this.exitGameButton.setTransform(true);
-        this.exitGameButton.setScale(1.5f);
 
 
         // adiciona a função de sair do jogo para o botão de sair
         this.exitGameButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent e, Actor a) {
+
+                confirmSound.play(1f);
+
                 Gdx.app.exit();
             }
         });
@@ -59,8 +65,12 @@ public class MainMenuScreen implements Screen {
         this.newGameButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent e, Actor a) {
-                game.setScreen(new GameScreen(game));
 
+                confirmSound.play(1f);
+
+                game.backgroundMusic.play();
+                
+                game.setScreen(new GameScreen(game, 1, 0));     // começa no nível 1 com 0 pontos
                 dispose();
             }
         });
@@ -73,16 +83,16 @@ public class MainMenuScreen implements Screen {
         image.setFillParent(true);
         
         table.bottom();
-        table.add(newGameButton).pad(15);
+        table.padLeft(20).padBottom(60);
+        table.add(newGameButton).padBottom(15).center();
         table.row();
-        table.add(exitGameButton).pad(15);
-        table.padBottom(50);
+        table.add(exitGameButton).center();
     }
 
     @Override
     public void show() {
         // ScreenViewport se adapta à tela
-        stage = new Stage(new FitViewport(GAME_WIDHT, GAME_HEIGHT));
+        stage = new Stage(new FitViewport(GAME_WIDTH, GAME_HEIGHT));
         
         // permite o reconhecimente de mouse e teclado
         Gdx.input.setInputProcessor(stage);
@@ -99,6 +109,14 @@ public class MainMenuScreen implements Screen {
 
         stage.addActor(backgroundImage);
         stage.addActor(table);
+
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("theme_music.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(1f);
+        backgroundMusic.play();
+
+        confirmSound = Gdx.audio.newSound(Gdx.files.internal("confirm.mp3"));
+
     }
 
     @Override
@@ -139,6 +157,8 @@ public class MainMenuScreen implements Screen {
         stage.dispose();  
         backgroundTexture.dispose();
         font.dispose();
+        backgroundMusic.dispose();
+        confirmSound.dispose();
     }
 
 }
