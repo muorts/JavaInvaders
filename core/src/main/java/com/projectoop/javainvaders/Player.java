@@ -7,12 +7,14 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.audio.Sound;
 
 public class Player {
     private Texture flyingSpriteSheet;
     private Animation<TextureRegion> flyingAnimation;
     private Texture shootingSpriteSheet;
     private Animation<TextureRegion> shootingAnimation;
+    private Sound shootSound;
 
     private float stateTime;        // acumulador para o tempo de animação
     private Rectangle visualBox;        // caixa que mantem a arte do jogador
@@ -33,6 +35,7 @@ public class Player {
         initShootAnimation();
         initPlayerHitbox();
         initPlayerPosition();
+        shootSound = Gdx.audio.newSound(Gdx.files.internal("shot.mp3"));
     }
 
     /**
@@ -153,6 +156,9 @@ public class Player {
     public void takeDamage() {
         lives--;
     }
+    public int getLives() {
+        return lives;
+    }
     
 
     /**
@@ -170,8 +176,11 @@ public class Player {
         if(shootTimer > 0 && !laserSpawnedThisShot && stateTime >= 0.70f) { // 60f está no 6° frame da animação de tiro
             // sincroniza a animação de tiro com o laser propriamente dito
             laserSpawnedThisShot = true;
-            float laserX = visualBox.x + (visualBox.width / 2f) - 4.5f;
+            float laserX = visualBox.x + (visualBox.width / 2f) - 10f;
             float laserY = visualBox.y + visualBox.height;
+
+            shootSound.play(0.4f);
+
             return new Laser(laserX, laserY);
         }
 
@@ -201,6 +210,7 @@ public class Player {
     public void dispose() {
         flyingSpriteSheet.dispose();
         shootingSpriteSheet.dispose();
+        shootSound.dispose();
     }
 
     /**

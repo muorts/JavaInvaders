@@ -14,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 
 
 public class MainMenuScreen implements Screen {
@@ -23,6 +25,9 @@ public class MainMenuScreen implements Screen {
     private TextButton newGameButton;
     private TextButton exitGameButton;
     private BitmapFont font;
+
+    private Music backgroundMusic;
+    private Sound confirmSound;
 
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
@@ -49,6 +54,9 @@ public class MainMenuScreen implements Screen {
         this.exitGameButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent e, Actor a) {
+
+                confirmSound.play(1f);
+
                 Gdx.app.exit();
             }
         });
@@ -57,6 +65,8 @@ public class MainMenuScreen implements Screen {
         this.newGameButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent e, Actor a) {
+
+                confirmSound.play(1f);
                 game.setScreen(new GameScreen(game, 1, 0));     // começa no nível 1 com 0 pontos
                 dispose();
             }
@@ -96,6 +106,14 @@ public class MainMenuScreen implements Screen {
 
         stage.addActor(backgroundImage);
         stage.addActor(table);
+
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("theme_music.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(1f);
+        backgroundMusic.play();
+
+        confirmSound = Gdx.audio.newSound(Gdx.files.internal("confirm.mp3"));
+
     }
 
     @Override
@@ -136,6 +154,8 @@ public class MainMenuScreen implements Screen {
         stage.dispose();  
         backgroundTexture.dispose();
         font.dispose();
+        backgroundMusic.dispose();
+        confirmSound.dispose();
     }
 
 }

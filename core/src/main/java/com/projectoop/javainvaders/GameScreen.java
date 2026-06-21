@@ -12,6 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 
 
 
@@ -32,6 +34,11 @@ public class GameScreen implements Screen {
     private Stage stage;       
     private Texture backgroundTexture;
     private BitmapFont hudFont;
+
+    private Sound exploseSound;
+    private Music backgroundMusic;
+    private Sound damageSound;
+    private Sound bigExploseSound;
 
     // variaveis que definem o tamanho da tela do jogo
     private static final float GAME_WIDTH = 800;
@@ -74,7 +81,17 @@ public class GameScreen implements Screen {
 
         stage.addActor(backgroundImage);
         stage.addActor(table);
-    }
+
+        exploseSound = Gdx.audio.newSound(Gdx.files.internal("kill.mp3"));
+        damageSound = Gdx.audio.newSound(Gdx.files.internal("damage.mp3"));
+        bigExploseSound = Gdx.audio.newSound(Gdx.files.internal("big_explose.mp3"));
+
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("level_1.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(0.5f);
+        backgroundMusic.play();
+
+        }
 
     @Override
     public void render(float delta) {
@@ -142,6 +159,7 @@ public class GameScreen implements Screen {
         bombManager.dispose();
         hudFont.dispose();
         explosionManager.dispose();
+        exploseSound.dispose();
     }
 
     private void updateStates(float delta) {
@@ -200,6 +218,8 @@ public class GameScreen implements Screen {
                     float expY = alien.getHitbox().y + (alien.getHitbox().height / 2f) - (48f / 2f);
                     explosionManager.addExplosion(expX, expY);
 
+                    exploseSound.play(0.5f);
+
                     aliens.removeIndex(j);
                     laserHit = true;
                     player.addPoints(50);           // ganha 50 pontos por alien destruido
@@ -223,6 +243,8 @@ public class GameScreen implements Screen {
                 float expY = player.getHitbox().y + (player.getHitbox().height / 2f) - (48f / 2f);
                 explosionManager.addExplosion(expX, expY);
 
+                damageSound.play(3f);
+
                 System.out.println("Jogador foi Atingido");
                 player.takeDamage();            // perde uma vida
             }
@@ -233,6 +255,9 @@ public class GameScreen implements Screen {
             Alien alien = aliens.get(i);
 
             if(alien.getHitbox().overlaps(player.getHitbox())) {
+
+                bigExploseSound.play(0.5f);
+
                 System.out.println("ALIEN INVADIU A NAVE!");
                 gameLoose();
             }
@@ -247,13 +272,22 @@ public class GameScreen implements Screen {
     private void winGame() {
         System.out.println("GANHOU O JOGO");
         System.out.println("Pontuação total: " + player.getPoints());
-        Gdx.app.exit();
+
+        backgroundMusic.stop();
+
+        game.setScreen(new GameWinScreen(game, player.getPoints()));
+        dispose();
     }
 
     private void gameLoose() {
         System.out.println("PERDEU O JOGO");
         System.out.println("Pontuação total: " + player.getPoints());
-        Gdx.app.exit();
+        
+        backgroundMusic.stop();
+
+        // para testes game.setScreen(new GameWinScreen(game, player.getPoints()));
+        game.setScreen(new GameOverScreen(game, player.getPoints()));
+        dispose();
     }
 
     private void drawHUD() {
@@ -277,6 +311,10 @@ public class GameScreen implements Screen {
             passLevel();
         }
 
-        // TODO: checar se acabou as vidas do player
+        // Verifica se acabaram as vidas do player
+        if (player.getLives() <= 0) {
+            gameLoose();
+        }
     }
+
 }
