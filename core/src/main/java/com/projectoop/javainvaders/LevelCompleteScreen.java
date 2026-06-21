@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.audio.Music;
 
 public class LevelCompleteScreen implements Screen {
     final JavaInvadersGame game;
@@ -16,7 +15,6 @@ public class LevelCompleteScreen implements Screen {
     private int previousPoints;
     private Stage stage;
     private Texture backgroundTexture;
-    private Music winAudio;
 
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
@@ -39,10 +37,6 @@ public class LevelCompleteScreen implements Screen {
         backgroundImage.setFillParent(true); // Faz a imagem ocupar a tela inteira
 
         stage.addActor(backgroundImage);
-
-        winAudio = Gdx.audio.newMusic(Gdx.files.internal("win_sound.mp3"));
-        winAudio.setVolume(1f);
-        winAudio.play();
     }
 
     @Override
@@ -82,8 +76,6 @@ public class LevelCompleteScreen implements Screen {
     public void dispose() {
         // Libera a memória das texturas e stages 
         if (stage != null) stage.dispose();
-        if (backgroundTexture != null) backgroundTexture.dispose();
-        
-        winAudio.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();        
     }
 }
