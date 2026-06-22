@@ -1,4 +1,4 @@
-package com.projectoop.javainvaders;
+package com.projectoop.javainvaders.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -12,14 +12,29 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.projectoop.javainvaders.entities.Alien;
+import com.projectoop.javainvaders.entities.AlienFleet;
+import com.projectoop.javainvaders.entities.Bomb;
+import com.projectoop.javainvaders.entities.BombManager;
+import com.projectoop.javainvaders.entities.ExplosionManager;
+import com.projectoop.javainvaders.entities.JavaInvadersGame;
+import com.projectoop.javainvaders.entities.Laser;
+import com.projectoop.javainvaders.entities.LaserManager;
+import com.projectoop.javainvaders.entities.Player;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.utils.Array;
 
 
 
 
-
+/**
+ * Classe que coordena a tela de jogo. Ela é responsável por renderizar os níveis, as entidades e 
+ * suas texturas. Contém a lógica de colisão e checagem de vitória, de nível e global, e de derrota.
+ * Delega o carregamento das texturas das entidades para os seus gerenciadores para reduzir o consumo 
+ * de hardware a manter o FPS alto.
+ */
 public class GameScreen implements Screen {
-
+    // variáveis de jogo
     final JavaInvadersGame game;
     final Player player;      
     private AlienFleet aliensFleet;         // gerenciador da horda de aliens
@@ -28,12 +43,14 @@ public class GameScreen implements Screen {
     private int currentLevel = 1;       // o jogo inicia no primeiro nível
     private ExplosionManager explosionManager;
 
+    // variáveis para renderização do design do nível
     private OrthographicCamera camera;
     private Viewport view;
     private Stage stage;       
     private Texture backgroundTexture;
     private BitmapFont hudFont;
 
+    // variáveis de som do nível
     private Sound exploseSound;
     private Sound damageSound;
     private Sound bigExploseSound;
@@ -43,13 +60,13 @@ public class GameScreen implements Screen {
     private static final float GAME_HEIGHT = 600;
 
 
-    public GameScreen(JavaInvadersGame game, int Level, int previousPoints) {
-        currentLevel = Level;
+    public GameScreen(JavaInvadersGame game, int level, int previousPoints) {
+        currentLevel = level;
         this.game = game;
         this.player = new Player();
         player.addPoints(previousPoints);       // garante que o jogador irá começar com 0 pontos ou com os pontos das outras fases
 
-        this.aliensFleet = new AlienFleet(Level);
+        this.aliensFleet = new AlienFleet(level);
         this.bombManager = new BombManager();
         this.laserManager = new LaserManager();
         this.explosionManager = new ExplosionManager();
@@ -63,13 +80,16 @@ public class GameScreen implements Screen {
         hudFont.getData().setScale(0.5f);
     }
 
+    /**
+     * Método chamado quando essa tela está com o foco.
+     * Método oposto ao hide().
+     */
     @Override
     public void show() {
-        // inicializar as entidades do jogo
         // ScreenViewport se adapta à tela
         stage = new Stage(new FitViewport(GAME_WIDTH, GAME_HEIGHT));
         
-
+        // carregamento da tela de fundo
         backgroundTexture = new Texture(Gdx.files.internal("GameBackground.png"));
         Image backgroundImage = new Image(backgroundTexture);
 
@@ -82,6 +102,10 @@ public class GameScreen implements Screen {
         stage.addActor(table);
     }
 
+    /**
+     * Realiza a renderização do jogo por completo. 
+     * Método chamado naturalmente pela LibGDX.
+     */
     @Override
     public void render(float delta) {
         // checagem de pause do game
@@ -90,7 +114,7 @@ public class GameScreen implements Screen {
             return;         // interrompe o render deste frame
         }
 
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);        // pinta a tela de preto
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
@@ -102,9 +126,11 @@ public class GameScreen implements Screen {
 
         // Atualiza os estados das entidades do jogo
         updateStates(delta);
+
         // renderização
         game.sprite.begin();
 
+        // colocar todas as funções de desenho dentro desse intervalo
         drawEntities();
         drawHUD();
 
@@ -113,33 +139,31 @@ public class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        // If the window is minimized on a desktop (LWJGL3) platform, width and height are 0, which causes problems.
-        // In that case, we don't resize anything, and wait for the window to be a normal size before updating.
+        // método para redefinir o tamanho da imagem
         if(width <= 0 || height <= 0) return;
 
-        // Resize your screen here. The parameters represent the new window size.
         view.update(width, height, true);
         stage.getViewport().update(width, height, true);
     }
 
     @Override
     public void pause() {
-        // Invoked when your application is paused.
+        // método a ser utilizado quando a tela é tirada de foco(ex: quando minimizar a tela)
     }
 
     @Override
     public void resume() {
-        // Invoked when your application is resumed after pause.
+        // método a ser utilizado quando a tela retorna ao foco
     }
 
     @Override
     public void hide() {
-        // This method is called when another screen replaces this one.
+        // método chamado naturalmente quando outra tela substitui essa. 
     }
 
     @Override
     public void dispose() {
-        // Destroy screen's assets here.
+        // método para liberar as texturas carregadas da memória
         stage.dispose();
         backgroundTexture.dispose();
         player.dispose();
@@ -153,9 +177,13 @@ public class GameScreen implements Screen {
         bigExploseSound.dispose();
     }
 
+    /**
+     * Método para atualizar os estados e ações do jogo.
+     * Atualiza as posições de todas as entidades e chama a checagem de colisões
+     * @param delta - é o tempo que passou entre a última vez que a tela foi desenhada e o instante presente, 
+     * tem que se manter na função para que a velocidade do jogo se mantenha constante, independente do hardware do PC
+     */
     private void updateStates(float delta) {
-        // atualização do jogo
-
         // atualiza as posições e o tiro
         player.update(delta);
         Laser newLaser = player.shoot();
@@ -176,6 +204,10 @@ public class GameScreen implements Screen {
         checkCollisions();
     }
 
+    /**
+     * Chama o método de desenho de cada uma das 
+     * entidades para elas "se desenharem" na tela
+     */
     private void drawEntities() {
         player.draw(game.sprite);
         aliensFleet.draw(game.sprite);
@@ -185,12 +217,15 @@ public class GameScreen implements Screen {
     }
 
 
-    // funcao criada para checar as colisoes e der um retorno sobre elas
+    /**
+     * Método que realiza a verificação das colisões utilizando o método AABB.
+     * Para cada um dos cenários, a colisão tem uma consequência diferente.
+     */
     private void checkCollisions() {
         // lista as entidades da tela
-        com.badlogic.gdx.utils.Array<Laser> lasers = laserManager.getLasers();
-        com.badlogic.gdx.utils.Array<Alien> aliens = aliensFleet.getAliens();
-        com.badlogic.gdx.utils.Array<Bomb> bombs = bombManager.getBombs();
+        Array<Laser> lasers = laserManager.getLasers();
+        Array<Alien> aliens = aliensFleet.getAliens();
+        Array<Bomb> bombs = bombManager.getBombs();
 
         // Colisão 1: Player atingindo os Aliens
         for (int i = lasers.size - 1; i >= 0; i--) {
@@ -202,8 +237,6 @@ public class GameScreen implements Screen {
 
                 // Método AABB para colisões
                 if (laser.getHitbox().overlaps(alien.getHitbox())) {
-                    // Remove o alien e marca que o laser bateu
-
                     // Pega o centro do alien e recua metade do tamanho da explosão (24px)
                     float expX = alien.getHitbox().x + (alien.getHitbox().width / 2f) - (48f / 2f);
                     float expY = alien.getHitbox().y + (alien.getHitbox().height / 2f) - (48f / 2f);
@@ -211,9 +244,10 @@ public class GameScreen implements Screen {
 
                     exploseSound.play(0.5f);
 
+                    // Remove o alien e marca que o laser bateu
                     aliens.removeIndex(j);
                     laserHit = true;
-                    player.addPoints(50);           // ganha 50 pontos por alien destruido
+                    player.addPoints(50);           // mude os pontos do player aqui        
                     break; // laser bateu, logo nao precisa checar outros aliens
                 }
             }
@@ -228,8 +262,10 @@ public class GameScreen implements Screen {
             Bomb bomb = bombs.get(i);
 
             if(bomb.getHitbox().overlaps(player.getHitbox())) {
+                // remove a bomba do array de bombas do jogo
                 bombs.removeIndex(i);
                 
+                // pega o centro da bomba e recua metade do tamanho da explosão para desenhar em uma posição mais correta
                 float expX = player.getHitbox().x + (player.getHitbox().width / 2f) - (48f / 2f);
                 float expY = player.getHitbox().y + (player.getHitbox().height / 2f) - (48f / 2f);
                 explosionManager.addExplosion(expX, expY);
@@ -237,45 +273,63 @@ public class GameScreen implements Screen {
                 damageSound.play(3f);
 
                 System.out.println("Jogador foi Atingido");
-                player.takeDamage();            // perde uma vida
+                player.takeDamage();            // player perde uma vida
             }
         }
 
         // Colisao 3: Alien atinge player
         for (int i = aliens.size - 1; i >= 0; i--) {
+            // colisão mais catastrófica: se o alien encostar no player ou passar da linha dele, o jogo acaba
             Alien alien = aliens.get(i);
 
-            if(alien.getHitbox().overlaps(player.getHitbox())) {
+            if(alien.getHitbox().overlaps(player.getHitbox()) || alien.getHitbox().y <= 0) {
 
                 bigExploseSound.play(0.5f);
 
                 System.out.println("ALIEN INVADIU A NAVE!");
                 gameLoose();
+                return;
             }
 
         }
     }
 
+    /**
+     * Método a ser chamado quando o jogador destroi todos os aliens de certo nível
+     * Substitui a tela atual pela tela de que passou de nível.
+     * É necessário passar os pontos do jogador para que não reiniciem de acordo com a fase
+     */
     private void passLevel() {
         game.setScreen(new LevelCompleteScreen(game, currentLevel, player.getPoints()));
     }
 
+    /**
+     * Método a ser chamado quando o jogador ganha o jogo.
+     * Substitui a tela atual pela tela de jogo ganho.
+     */
     private void winGame() {
         System.out.println("GANHOU O JOGO");
         System.out.println("Pontuação total: " + player.getPoints());
-        game.backgroundMusic.dispose();
+        game.backgroundMusic.dispose();         // necessário para a música de gameplay não continuar tocando
         game.setScreen(new GameWinScreen(game, player.getPoints()));
         dispose();
     }
 
+    /**
+     * Método a ser chamado quando o jogador perde o jogo.
+     * Substitui a tela atual pela tela de Game Loose.
+     */
     private void gameLoose() {
         System.out.println("PERDEU O JOGO");
         System.out.println("Pontuação total: " + player.getPoints());
-        game.backgroundMusic.dispose();
+        game.backgroundMusic.dispose();         // necessário para a música de gameplay não continuar tocando
         game.setScreen(new GameOverScreen(game, player.getPoints()));
         dispose();
     }
 
+    /**
+     * Método que desenha o HUD do nível.
+     */
     private void drawHUD() {
         int[] status = player.getStatus();
         int playerPoints = status[0];
@@ -285,6 +339,9 @@ public class GameScreen implements Screen {
 
     }
 
+    /**
+     * Método que checa se o player morreu ou se matou todos os aliens
+     */
     private void checkWinOrLoose() {
         // checa se matou todos os aliens
         if(aliensFleet.getAliens().size == 0) {
@@ -303,7 +360,11 @@ public class GameScreen implements Screen {
         }
     }
 
-
+    /**
+     * Método que inicializa as variáveis de som da fase. 
+     * Apenas inicializa os sons momentâneos, delegando a música de fundo
+     * para a classe global do jogo.
+     */
     private void initGameSound() {
         exploseSound = Gdx.audio.newSound(Gdx.files.internal("kill.mp3"));
         damageSound = Gdx.audio.newSound(Gdx.files.internal("damage.mp3"));

@@ -1,4 +1,4 @@
-package com.projectoop.javainvaders;
+package com.projectoop.javainvaders.entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -7,6 +7,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Classe responsável por gerenciar a horda de aliens. A sua existência é justificada pela otimização
+ * de hardware, mantendo o FPS alto. É aqui que se define o movimento dos aliens e o intervalo de tiro.
+ * Gerencia, também, o desenho dos aliens. Caso queira aumentar a dificuldade dos níveis, ou aumentar um 
+ * nível de dificuldade, faça a modificação dos intervalos aqui.
+ */
 public class AlienFleet {
     private Array<Alien> aliensAlive;        // lista que contem os aliens vivos
 
@@ -37,6 +43,7 @@ public class AlienFleet {
     private void initFleet(int currentLevel) {
         aliensAlive = new Array<Alien>();
 
+        // carrega a textura na memória
         alienSpriteSheet = new Texture(Gdx.files.internal("Alien_Spritesheet.png"));
         alienSpriteSheet.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
@@ -52,6 +59,7 @@ public class AlienFleet {
             }
         }
 
+        // inicializa a animação
         alienAnimation = new Animation<TextureRegion>(alienMoveInterval, frames);
         alienStateTime = 0f;
         alienShootTimer = 0f;
@@ -76,6 +84,8 @@ public class AlienFleet {
             ALIEN_SHOOT_INTERVAL = 0.4f;
             alienMoveInterval = 0.25f;
         }
+
+        // posicionamento inicial dos aliens
         float startX = 100f;    // margem inicial esquerda
         float startY = GAME_HEIGHT - 100f; // posição da linha mais alta
         float spacingX = 50f;   // distância horizontal entre os aliens
@@ -122,8 +132,6 @@ public class AlienFleet {
 
                 for(Alien alien : aliensAlive) 
                     alien.update(0, -ALIEN_STEP_Y);
-
-                // AUMENTE A VELOCIDADE AQUI
             } else {
                 for(Alien alien : aliensAlive)
                     alien.update(ALIEN_STEP_X * alienDirection, 0);
@@ -134,34 +142,49 @@ public class AlienFleet {
         shoot(activeBombs);
     }
 
-
+    /**
+     * Método que realiza o tiro dos aliens. Utiliza uma lógica de aleatoriedade no tiro, ou seja,
+     * qualquer alien vivo consegue atirar.
+     * @param activeBombs array de bombas que já estão no jogo(pode estar vazio)
+     */
     private void shoot(Array<Bomb> activeBombs) {
         if(alienShootTimer >= ALIEN_SHOOT_INTERVAL) {
             alienShootTimer = 0f;       // reseta o cronômetro
 
             if(aliensAlive.size > 0) {
                 int randomIndex = com.badlogic.gdx.math.MathUtils.random(0, aliensAlive.size - 1);
-                Alien shooter = aliensAlive.get(randomIndex);
+                Alien shooter = aliensAlive.get(randomIndex);       // seleciona um alien para atirar
 
                 float bombX = shooter.getHitbox().x + (shooter.getHitbox().width / 2f) - 16f;       // subtrai 16 porque é metade da bomba
                 float bombY = shooter.getHitbox().y;
 
-                activeBombs.add(new Bomb(bombX, bombY));
+                activeBombs.add(new Bomb(bombX, bombY));        // adiciona a bomba no vetor 
             }
         }
     }
 
-
+    /**
+     * Faz o desenho da frota. Delega a responsabilidade de "se desenhar" para cada alien,
+     * fazendo, apenas, um loop no qual cada alien se desenha na posição correta.
+     * @param batch game sprite já inicializado
+     */
     public void draw(SpriteBatch batch) {
         TextureRegion currentAlienFrame = alienAnimation.getKeyFrame(alienStateTime, true);
         for (Alien alien : aliensAlive) 
             alien.draw(batch, currentAlienFrame);
     }
 
+    /**
+     * Método para liberar a memória da frota como um todo
+     */
     public void dispose() {
         alienSpriteSheet.dispose();
     }
 
+    /**
+     * Método que retorna o vetor de aliens vivos no jogo
+     * @return  vetor de aliens vivos
+     */
     public Array<Alien> getAliens() {
         return aliensAlive;
     }

@@ -1,4 +1,4 @@
-package com.projectoop.javainvaders;
+package com.projectoop.javainvaders.entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -9,25 +9,33 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.audio.Sound;
 
+
+/**
+ * Classe que representa o jogador principal. É responsável por tudo relacionado
+ * ao player, desde o seu desenho e animações, até a lógica de vida e morte.
+ */
 public class Player {
+    // atributos de desenho
     private Texture flyingSpriteSheet;
     private Animation<TextureRegion> flyingAnimation;
     private Texture shootingSpriteSheet;
     private Animation<TextureRegion> shootingAnimation;
     private Sound shootSound;
-
     private float stateTime;        // acumulador para o tempo de animação
+
+    // atributos de hitbox
     private Rectangle visualBox;        // caixa que mantem a arte do jogador
     private Rectangle collisionBox;     // hitbox real do jogador
 
+    // atributos de jogo
     private int points = 0;         // pontos iniciais
     private int lives = 3;          // jogador inicia com 3 vidas
-
     private static final float SHIP_SPEED = 300f;   // 300 pixels por segundo
     private float shootTimer;   // cronômetro para atirar
     private static final float SHOOT_COOLDOWN = 0.72f;
     private boolean laserSpawnedThisShot = true;
 
+    // atributo da tela do jogo
     private static final float GAME_WIDTH = 800;
 
     public Player() {
@@ -66,6 +74,10 @@ public class Player {
         stateTime = 0f;
     }
 
+    /**
+     * Método para desenhar a animação de nave atirando. Utiliza a mesma lógica de desenho
+     * que os outros métodos.
+     */
     private void initShootAnimation() {
         shootingSpriteSheet = new Texture(Gdx.files.internal("Spaceship_shooting_spritesheet.png"));
         shootingSpriteSheet.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);    // mantém o desenho da nave nítido
@@ -92,7 +104,9 @@ public class Player {
     /**
      * Método para inicializar a hitbox do player.
      * O jogador é essencialmente um retângulo.
-     * OBS: para aumentar o tamanho da nave, aumente width e height aqui
+     * A separação de hitbox ocorreu para não atrapalhar a imagem do player e manter 
+     * uma colisão fiel.
+     * OBS: para aumentar o tamanho da nave, aumente visualBox.width e visualBox.height aqui
      */
     private void initPlayerHitbox() {
         // Hitbox visual do player
@@ -146,23 +160,41 @@ public class Player {
         stateTime += delta;
     }
 
+    /**
+     * Adiciona uma certa quantidade de pontos ao jogador
+     * @param x     pontos a serem adicionados
+     */
     public void addPoints(int x) {
-        points += x;
+        points += (x * lives); // ganha x pontos por alien destruido proporcionalmente às vidas do player
     }
 
+    /**
+     * Método usado para pegar apenas os pontos atuais do player
+     * @return os pontos do player no instante que o método é chamado
+     */
     public int getPoints() {
         return points;
     }
+
+    /**
+     * Método que atualiza as vidas do player rapidamente.
+     */
     public void takeDamage() {
         lives--;
     }
+
+    /**
+     * Método usado para pegar apenas as vidas do player
+     * @return as vidas do player no instante que o método é chamado
+     */
     public int getLives() {
         return lives;
     }
     
 
     /**
-     *  Método que atira um laser do centro da nave se for apertado espaço e o cronometro estiver no 0
+     *  Método que atira um laser do centro da nave se for apertado espaço e o cronometro estiver no 0.
+     *  Faz uma verificação mais complexa para coordenar a animação de tiro com a saída do laser de verdade.
      * @return - um novo Laser com as coordenadas do meio do topo da nave ou nulo se não obedecer uma das condições
      */
     public Laser shoot() {
@@ -187,6 +219,7 @@ public class Player {
         return null;
     }
 
+
     /**
      * Método para desenhar a nave do jogador
      * @param batch - SpriteBatch enviado pela própria GameScreen para desenhar na tela
@@ -204,6 +237,7 @@ public class Player {
         batch.draw(currentFrame, visualBox.x, visualBox.y, visualBox.width, visualBox.height);
     }
 
+    
     /**
      * Método para limpar a memória
      */
