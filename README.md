@@ -87,7 +87,7 @@ Este projeto utiliza o [Gradle](https://gradle.org/) para o gerenciamento de dep
 
 | Menu Principal |
 | :---: |
-| ![Menu](assets/MainMenuBackgroung.png) |
+| ![Menu](assets/MainMenuBackground.png) |
 
 | Tela de Pause|
 | :---: |
