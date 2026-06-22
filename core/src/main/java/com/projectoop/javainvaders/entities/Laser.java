@@ -1,9 +1,14 @@
-package com.projectoop.javainvaders;
+package com.projectoop.javainvaders.entities;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
+/**
+ * Classe que representa um único laser, responsável por definir o movimento
+ * e o tamanho dos lasers do jogo. É aqui que ocorre o desenho de um único laser
+ * especifico.
+ */
 public class Laser {
     private Rectangle hitbox;
     private static final float LASER_SPEED = 350f;
@@ -33,6 +38,10 @@ public class Laser {
         batch.draw(laserTexture, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 
+    /**
+     * Retorna os atributos espaciais do laser
+     * @return  a hitbox de um laser específico
+     */
     public Rectangle getHitbox() {
         return hitbox;
     }
