@@ -1,4 +1,4 @@
-package com.projectoop.javainvaders;
+package com.projectoop.javainvaders.screens;
 
 
 import com.badlogic.gdx.Gdx;
@@ -14,12 +14,21 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.projectoop.javainvaders.entities.JavaInvadersGame;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
 
+/**
+ * Classe que coordena a tela de menu principal. É responsável unicamente por renderizar
+ * a tela do menu e controlar os botões e suas funções. É nessa classe que inicia um novo jogo
+ * passando as variáveis para que o jogo comece no nível 1 e com 0 pontos.
+ */
 public class MainMenuScreen implements Screen {
+    // atributo de jogo
     final JavaInvadersGame game;        // referência ao jogo global
+
+    // atributo de renderização e design
     private Stage stage;       
     private Texture backgroundTexture;
     private TextButton newGameButton;
@@ -29,6 +38,7 @@ public class MainMenuScreen implements Screen {
     private Music backgroundMusic;
     private Sound confirmSound;
 
+    // atributos que definem o tamanho da tela do jogo
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
@@ -36,6 +46,9 @@ public class MainMenuScreen implements Screen {
         this.game = game;
     }
 
+    /**
+     * Inicializa e configura os botões da tela.
+     */
     private void setButtons() {
         // determina uma fonte e estilo padrão para os botões
         font = new BitmapFont(Gdx.files.internal("GameFont.fnt"));
@@ -76,7 +89,11 @@ public class MainMenuScreen implements Screen {
         });
     }
 
-    // faz a configuração do layout da tela de menu
+    /**
+     * Faz a configuração do layout da tela
+     * @param table table já inicializada
+     * @param image imagem já inicializada e carregada com a textura
+     */
     private void setLayout(Table table, Image image) {
         
         table.setFillParent(true);  // ocupa a tela inteira
@@ -89,6 +106,10 @@ public class MainMenuScreen implements Screen {
         table.add(exitGameButton).center();
     }
 
+    /**
+     * Método chamado quando essa tela está com o foco.
+     * Método oposto ao hide().
+     */
     @Override
     public void show() {
         // ScreenViewport se adapta à tela
@@ -119,6 +140,10 @@ public class MainMenuScreen implements Screen {
 
     }
 
+    /**
+     * Realiza a renderização do jogo por completo. 
+     * Método chamado naturalmente pela LibGDX.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0.1f, 1);       // limpa a tela para um azul bem escuro(0.1f no azul)
@@ -127,6 +152,7 @@ public class MainMenuScreen implements Screen {
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));      // stage calcula a logica de animações
         stage.draw();
     }
+
 
     @Override
     public void resize(int width, int height) {
@@ -138,17 +164,17 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void pause() {
-        // Invoked when your application is paused.
+        // método a ser utilizado quando a tela é tirada de foco(ex: quando minimizar a tela)
     }
 
     @Override
     public void resume() {
-        // Invoked when your application is resumed after pause.
+        // método a ser utilizado quando a tela é tirada de foco(ex: quando minimizar a tela)
     }
 
     @Override
     public void hide() {
-        // This method is called when another screen replaces this one.
+        // método a ser utilizado quando a tela retorna ao foco
     }
 
     @Override

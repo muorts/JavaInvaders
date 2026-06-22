@@ -1,4 +1,4 @@
-package com.projectoop.javainvaders;
+package com.projectoop.javainvaders.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -8,14 +8,26 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.projectoop.javainvaders.entities.JavaInvadersGame;
 
+
+/**
+ * Classe unicamente responsável por carregar a imagem de transição de níveis e
+ * passar o player de nível, mantendo a sua pontuação anterior. 
+ * Aceita apenas a tecla de espaço como input e retorna o foco para a GameScreen
+ * passando o próximo nível.
+ */
 public class LevelCompleteScreen implements Screen {
+    // atributos de jogo
     final JavaInvadersGame game;
     private int previousLevel;
     private int previousPoints;
+
+    // atributos de renderização e design
     private Stage stage;
     private Texture backgroundTexture;
 
+    // variaveis que definem o tamanho da tela do jogo
     private static final float GAME_WIDTH = 800;
     private static final float GAME_HEIGHT = 600;
 
@@ -25,6 +37,10 @@ public class LevelCompleteScreen implements Screen {
         previousPoints = points;
     }
 
+    /**
+     * Método chamado quando essa tela está com o foco.
+     * Método oposto ao hide().
+     */
     @Override
     public void show() {
         // Inicializa o palco com o mesmo tamanho padrão do jogo
@@ -39,6 +55,10 @@ public class LevelCompleteScreen implements Screen {
         stage.addActor(backgroundImage);
     }
 
+    /**
+     * Realiza a renderização da tela. 
+     * Método chamado naturalmente pela LibGDX.
+     */
     @Override
     public void render(float delta) {
         // Limpa a tela com fundo preto
@@ -57,18 +77,24 @@ public class LevelCompleteScreen implements Screen {
         }
     }
 
+    /**
+     * método para redefinir o tamanho da imagem
+     */
     @Override
     public void resize(int width, int height) {
         if(width <= 0 || height <= 0) return;
         stage.getViewport().update(width, height, true);
     }
 
+    // método a ser utilizado quando a tela é tirada de foco(ex: quando minimizar a tela)
     @Override
     public void pause() {}
 
+    // método a ser utilizado quando a tela retorna ao foco
     @Override
     public void resume() {}
 
+    // método a ser utilizado quando a tela retorna ao foco
     @Override
     public void hide() {}
 
