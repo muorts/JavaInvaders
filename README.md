@@ -106,4 +106,5 @@ Este projeto utiliza o [Gradle](https://gradle.org/) para o gerenciamento de dep
 * **Murilo Ortega Pereira** - [GitHub](https://github.com/muorts)
 * **Pedro Rondi** - [GitHub](https://github.com/PedroRondi)
 
+* **O repositório original do projeto pode ser encontrado [aqui](https://github.com/JoaoMarcelo-Faria/JavaInvaders.git)**
 ---
